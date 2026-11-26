@@ -1,0 +1,29 @@
+<odoo>
+    <!-- Hide Registry Models parent menu and all Refugee Registry child menus from PBMS navigation -->
+    <record id="g2p_pbms.menu_g2p_registry" model="ir.ui.menu">
+        <field name="active" eval="False"/>
+        <field name="groups_id" eval="[(6, 0, [ref('base.group_no_one')])]"/>
+    </record>
+
+    <menuitem id="menu_g2p_refugee_individual_registry"
+              name="Refugee Individual Registry"
+              parent="g2p_pbms.menu_g2p_registry"
+              action="action_g2p_refugee_individual_registry"
+              groups="g2p_pbms.group_program_super_administration,g2p_pbms.group_program_administration,g2p_pbms.group_beneficiary_list_editor,g2p_pbms.group_beneficiary_list_viewer"
+              active="False"
+              sequence="1"/>
+    <menuitem id="menu_g2p_refugee_group_registry"
+              name="Refugee Group / Household Registry"
+              parent="g2p_pbms.menu_g2p_registry"
+              action="action_g2p_refugee_group_registry"
+              groups="g2p_pbms.group_program_super_administration,g2p_pbms.group_program_administration,g2p_pbms.group_beneficiary_list_editor,g2p_pbms.group_beneficiary_list_viewer"
+              active="False"
+              sequence="2"/>
+    <menuitem id="menu_g2p_refugee_specific_need"
+              name="Refugee Specific Needs"
+              parent="g2p_pbms.menu_g2p_registry"
+              action="action_g2p_refugee_specific_need"
+              groups="g2p_pbms.group_program_super_administration,g2p_pbms.group_program_administration,g2p_pbms.group_beneficiary_list_editor,g2p_pbms.group_beneficiary_list_viewer"
+              active="False"
+              sequence="3"/>
+</odoo>

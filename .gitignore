@@ -2,8 +2,11 @@
 
 # Environments & Secrets
 .env
+.env.*
+!.env.example
 .env.local
 .env.*.local
+infrastructure/configs/odoo.conf
 *.pem
 *.key
 *.p12
@@ -34,6 +37,7 @@ wheels/
 *.egg
 
 # Odoo runtime & Filestore
+/addons/
 filestore/
 sessions/
 *.log
@@ -43,6 +47,7 @@ logs/*
 # Databases & Backups
 *.dump
 *.sql
+!infrastructure/postgres/init/*.sql
 *.tar.gz
 database/backups/*
 !database/backups/.gitkeep

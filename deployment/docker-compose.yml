@@ -1,0 +1,138 @@
+# ==============================================================================
+# docker-compose.yml — Standalone Refugee Management Infrastructure
+# Project Name: refugee-management
+# Network: refugee_mgmt_net
+# Dedicated Volumes: refugee_mgmt_postgres_data, refugee_mgmt_redis_data
+# Security: Bound to 127.0.0.1, no fallback secrets, pinned image tags
+# ==============================================================================
+name: refugee-management
+
+networks:
+  refugee_mgmt_net:
+    driver: bridge
+    name: refugee_mgmt_net
+
+volumes:
+  refugee_mgmt_postgres_data:
+    name: refugee_mgmt_postgres_data
+  refugee_mgmt_redis_data:
+    name: refugee_mgmt_redis_data
+  refugee_mgmt_minio_data:
+    name: refugee_mgmt_minio_data
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: refugee_mgmt_postgres
+    restart: unless-stopped
+    networks:
+      - refugee_mgmt_net
+    environment:
+      POSTGRES_USER: ${POSTGRES_SUPERUSER}
+      POSTGRES_PASSWORD: ${POSTGRES_SUPERUSER_PASSWORD}
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5543}:5432"
+    volumes:
+      - refugee_mgmt_postgres_data:/var/lib/postgresql/data
+      - ../infrastructure/postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_SUPERUSER}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: refugee_mgmt_redis
+    restart: unless-stopped
+    networks:
+      - refugee_mgmt_net
+    ports:
+      - "127.0.0.1:${REDIS_PORT:-6389}:6379"
+    volumes:
+      - refugee_mgmt_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  id-generator:
+    profiles: [full, idgen]
+    image: openg2p/openg2p-id-generator:1.0.0
+    platform: linux/amd64
+    container_name: refugee_mgmt_id_generator
+    restart: unless-stopped
+    networks:
+      - refugee_mgmt_net
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: refugee_idgenerator_db
+      DB_USER: ${POSTGRES_SUPERUSER}
+      DB_PASSWORD: ${POSTGRES_SUPERUSER_PASSWORD}
+      CONFIG_PATH: /app/config/default.yaml
+      UVICORN_HOST: 0.0.0.0
+      UVICORN_PORT: 8000
+      UVICORN_LOG_LEVEL: info
+    ports:
+      - "127.0.0.1:${ID_GENERATOR_PORT:-8140}:8000"
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/v1/idgenerator/health')\"",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+
+  keycloak:
+    profiles: [full, keycloak]
+    image: quay.io/keycloak/keycloak:26.0
+    platform: linux/amd64
+    container_name: refugee_mgmt_keycloak
+    restart: unless-stopped
+    networks:
+      - refugee_mgmt_net
+    command: start-dev
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+      KC_HTTP_PORT: 8080
+      KC_HOSTNAME_STRICT: "false"
+      KC_HOSTNAME_STRICT_HTTPS: "false"
+    ports:
+      - "127.0.0.1:${KEYCLOAK_PORT:-8180}:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8080"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+
+  minio:
+    profiles: [full, minio]
+    image: quay.io/minio/minio:latest
+    container_name: refugee_mgmt_minio
+    restart: unless-stopped
+    networks:
+      - refugee_mgmt_net
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    ports:
+      - "127.0.0.1:${MINIO_API_PORT:-9110}:9000"
+      - "127.0.0.1:${MINIO_CONSOLE_PORT:-9111}:9001"
+    volumes:
+      - refugee_mgmt_minio_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 10

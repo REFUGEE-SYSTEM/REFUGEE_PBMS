@@ -1,95 +1,126 @@
 # Refugee Management Standalone Project (`refugee_management`)
 
-An independent, standalone OpenG2P Social Registry and Programme Beneficiary Management System (PBMS) tailored for comprehensive Refugee Management.
+An independent, standalone OpenG2P Programme Beneficiary Management System (PBMS) and Refugee Registry built on **Odoo 17.0** and **OpenG2P PBMS 3.1.0**, tailored for refugee assistance programmes in Uganda (UGX).
 
 ---
 
-## 1. Project Overview
+## 1. Project Purpose & Standalone Architecture
 
-The `refugee_management` project provides a fully self-contained runtime environment for managing:
-- Individual Refugee Registration & Identification
-- Household / Group Composition & Dependency Analysis
-- All 100 Refugee Management Data Dictionary Attributes (Categories A–Q)
-- Vulnerability Assessment, Targeting & Scoring
-- Programme Enrolment & Lifecycle Management
-- Entitlements, Assistance Delivery & Reconciliation
+`refugee_management` provides a self-contained runtime and source tree decoupled from `openg2p-developer`, with dedicated containers, databases, filestore, Python virtual environment, and isolated localhost port bindings:
 
-This project is decoupled from the legacy `openg2p-developer` runtime and operates with its own dedicated infrastructure, database, filestore, and network configurations.
+- **Application Server:** Odoo 17.0 (`127.0.0.1:8169`, Gevent `8172`)
+- **Database:** PostgreSQL 16 (`127.0.0.1:5543`) hosting `refugee_management_db` and `refugee_bgtask_db`
+- **Cache / Broker:** Redis 7 (`127.0.0.1:6389`)
+- **Extensions:** `extensions/g2p_registry_addon` (Refugee Individual/Group/Specific Needs models, Refugee-only Program Base Registry dropdown, Uganda `UGX` currency configuration)
+- **Background Workers:** `source/pbms/core/openg2p-bg-task-celery-workers` (including **DEF-03** fix and unit tests)
 
 ---
 
-## 2. Directory Structure
+## 2. Repository Directory Structure
 
 ```text
 refugee_management/
-├── README.md                          # Project overview and quick start
+├── README.md                          # Project overview, setup, and operations guide
 ├── Makefile                           # Unified developer commands
-├── .env.example                       # Standalone configuration template
-├── .gitignore                         # Git exclusion rules
-│
-├── docs/                              # Architecture and operation documentation
-│   ├── architecture.md                # System topology and component interactions
-│   ├── dependencies.md                # Component and package catalog
-│   ├── installation.md                # Setup and deployment procedure
-│   ├── migration.md                   # Source and data migration guide
-│   ├── backup_restore.md              # Independent backup and recovery procedure
-│   ├── testing.md                     # Validation suites and test results
-│   └── migration_inventory.md         # Exact asset tracking and coupling analysis
-│
-├── source/                            # Self-contained application sources (Gate 4)
-│   ├── odoo17/                        # Odoo 17 Core Framework
-│   ├── openg2p-odoo-commons/          # Shared OpenG2P modules
-│   └── pbms/                          # PBMS monorepo & community addons
-│
-├── extensions/                        # Custom domain extensions
-│   └── g2p_registry_addon/            # Refugee Registry customization module
-│
-├── infrastructure/                    # Standalone container and service configs
-│   ├── docker/                        # Docker Compose definitions (Gate 5)
-│   ├── postgres/                      # PostgreSQL init scripts & schemas
-│   ├── redis/                         # Redis cache/broker configurations
-│   ├── keycloak/                      # Identity & realm configurations
-│   ├── minio/                         # S3 storage configurations
-│   └── configs/                       # Application runtime configurations
-│
-├── deployment/                        # Standalone deployment profiles
-├── scripts/                           # Operational management scripts
-├── database/
-│   ├── backups/                       # Local backup snapshots
-│   └── migration/                     # Schema and migration SQL scripts
-├── tests/                             # Test suites across 7 verification gates
-└── logs/                              # Service runtime logs
+├── .env.example                       # Sanitized environment variable template
+├── .gitignore                         # Excludes .env, odoo.conf, venv, filestore, dumps, logs
+├── requirements.txt                   # Pinned Python 3.11 dependencies
+├── docs/                              # Architecture, setup, and Gate 4-8 / implementation reports
+├── source/
+│   ├── odoo17/                        # Odoo 17.0 core framework & addons
+│   ├── pbms/                          # OpenG2P PBMS 3.1.0 (Odoo addons, APIs, Celery workers)
+│   └── openg2p-odoo-commons/          # OpenG2P shared Odoo modules
+├── extensions/
+│   └── g2p_registry_addon/            # Custom Refugee Registry, UGX currency & PBMS extensions
+├── infrastructure/
+│   ├── configs/odoo.conf.example      # Sanitized Odoo configuration template
+│   └── postgres/init/                 # PostgreSQL initialization SQL
+├── deployment/
+│   └── docker-compose.yml             # Standalone PostgreSQL, Redis, and optional services
+├── scripts/                           # Operational script placeholders
+├── database/backups/                  # Local backup directory (contents gitignored)
+└── logs/                              # Runtime logs directory (contents gitignored)
 ```
 
 ---
 
-## 3. Dedicated Port Mapping
+## 3. Prerequisites
 
-The standalone project uses a distinct port space to ensure full coexistence with any existing OpenG2P instances:
-
-| Service | Legacy PBMS Port | Standalone Port | Endpoint |
-|---|---|---|---|
-| **Odoo HTTP** | 8069 | **8169** | `http://localhost:8169` |
-| **Odoo Gevent** | 8072 | **8172** | `http://localhost:8172` |
-| **PostgreSQL** | 5433 | **5543** | `localhost:5543` |
-| **Redis** | 6379 | **6389** | `localhost:6389` |
-| **PBMS Staff Portal API** | 8050 | **8150** | `http://localhost:8150/docs` |
-| **OpenG2P ID Generator** | 8040 | **8140** | `http://localhost:8140/docs` |
-| **Keycloak (Optional)** | 8080 | **8180** | `http://localhost:8180` |
-| **MinIO S3 API (Optional)** | 9000 | **9110** | `http://localhost:9110` |
-| **MinIO S3 Console** | 9001 | **9111** | `http://localhost:9111` |
-| **G2P Bridge API** | 8002 | **8102** | `http://localhost:8102/docs` |
-| **SPAR Mapper API** | 8004 | **8104** | `http://localhost:8104/docs` |
+- Python `3.11.9`
+- Docker & Docker Compose
+- PostgreSQL client tools (`pg_dump`, `pg_restore`)
+- Git
 
 ---
 
-## 4. Current Migration Status
+## 4. Environment, Database & Redis Configuration
 
-- [x] **Gate 1 — Existing Environment Investigation**: Completed.
-- [x] **Gate 2 — Protection and Backup**: Completed. Verified backups stored in `/Users/apple/backups/gate2_20261126/`.
-- [x] **Gate 3 — Project Structure & Independent Git**: In Progress (Structure initialized; source migration planned for Gate 4).
-- [ ] **Gate 4 — Source Code Migration**: Pending.
-- [ ] **Gate 5 — Independent Infrastructure**: Pending.
-- [ ] **Gate 6 — Database & Application Installation**: Pending.
-- [ ] **Gate 7 — Integration & Functional Testing**: Pending.
-- [ ] **Gate 8 — Independence & Final Acceptance**: Pending.
+1. **Create `.env` from template** (never commit `.env`):
+   ```bash
+   cp .env.example .env
+   chmod 600 .env
+   # Set strong unique values for POSTGRES_SUPERUSER_PASSWORD, POSTGRES_PASSWORD, ODOO_ADMIN_PASSWORD, etc.
+   ```
+2. **Create `infrastructure/configs/odoo.conf` from template** (never commit `odoo.conf`):
+   ```bash
+   cp infrastructure/configs/odoo.conf.example infrastructure/configs/odoo.conf
+   # Update admin_passwd, db_password, and absolute paths for addons_path / data_dir
+   ```
+3. **Database & Redis ports (isolated from legacy defaults):**
+   - PostgreSQL: `127.0.0.1:5543` (`refugee_management_db`, `refugee_bgtask_db`)
+   - Redis: `127.0.0.1:6389`
+
+### Configured Addon Paths (`odoo.conf`)
+```text
+source/odoo17/addons,
+source/pbms/odoo/community-addons,
+source/pbms/odoo,
+extensions,
+source/pbms/odoo/extensions,
+source/openg2p-odoo-commons
+```
+*(Note: `extensions/g2p_registry_addon` takes precedence over `source/pbms/odoo/extensions/g2p_registry_addon`.)*
+
+---
+
+## 5. Installation & Startup Procedure
+
+```bash
+# 1. Start standalone PostgreSQL (5543) and Redis (6389)
+docker compose -f deployment/docker-compose.yml up -d postgres redis
+
+# 2. Create Python 3.11 virtual environment and install dependencies
+python3.11 -m venv venv
+./venv/bin/pip install -r requirements.txt
+
+# 3. Initialize or start standalone Odoo 17 on port 8169
+PYTHONPATH=$PWD/source/odoo17 ./venv/bin/python source/odoo17/odoo-bin -c infrastructure/configs/odoo.conf
+```
+
+Access the application at `http://127.0.0.1:8169`.
+
+---
+
+## 6. Testing Procedure
+
+- **DEF-03 Worker Unit Tests:**
+  ```bash
+  ./venv/bin/python -m unittest discover -s source/pbms/core/openg2p-bg-task-celery-workers/tests -v
+  ```
+- **Additional validation suites and Gate 4–8 reports** are documented under [`docs/`](docs/).
+
+---
+
+## 7. Refugee Registry Features & UGX Support
+
+- **Refugee Individual & Group Registries:** `g2p.register.refugee_individual`, `g2p.register.refugee_group`, `g2p.refugee.group.member`, `g2p.refugee.specific_need` (96/100 Data Dictionary attributes implemented).
+- **Refugee-Only Program Base Registry:** `g2p.program.definition.target_registry` restricted to `refugee_individual` and `refugee_group`; `Registry Models` navigation menus hidden by configuration.
+- **Ugandan Shilling (UGX):** `UGX` (`USh`, 0 decimal places, rounding `1.0`) activated in `res.currency`, `currency_id` added to `g2p.program.definition`, and `BenefitUnitWidget` patched to support `UGX`.
+
+---
+
+## 8. Known Limitations & Integration Notes
+
+- **Optional Microservices Disabled by Default:** Celery workers/beat, PBMS Staff Portal API (`8150`), G2P Bridge API (`8102`), Keycloak (`8180`), ID Generator (`8140`), and MinIO (`9100`) are not started in the base Odoo-only run; async disbursement envelope/batch/reconciliation workflows require starting those services.
+- **Pending Data Dictionary Attributes:** `H01`–`H03` (Telephone & Digital Connectivity) and field-level temporal audit history (`Q04`) are designed in Gate 8 Phase 5 and pending implementation.
+- **DEF-03 Retry Behavior:** `beneficiary_list_worker.py` raises `ValueError` for missing approved final enrollment lists; Celery Beat retries `Exception` subclasses up to `worker_max_attempts` unless classified as non-retryable.

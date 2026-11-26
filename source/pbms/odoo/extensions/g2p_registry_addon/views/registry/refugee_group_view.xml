@@ -1,0 +1,281 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Action -->
+    <record id="action_g2p_refugee_group_registry" model="ir.actions.act_window">
+        <field name="name">Refugee Group / Household Registry</field>
+        <field name="res_model">g2p.register.refugee_group</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- Form View -->
+    <record id="view_g2p_refugee_group_registry_form" model="ir.ui.view">
+        <field name="name">g2p.register.refugee_group.form</field>
+        <field name="model">g2p.register.refugee_group</field>
+        <field name="arch" type="xml">
+            <form string="Refugee Group Registry" create="0">
+                <sheet>
+                    <div class="oe_title">
+                        <label for="record_name" string="Group Name"/>
+                        <h1>
+                            <field name="record_name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group string="Group &amp; Case Identity">
+                        <group>
+                            <field name="case_number"/>
+                            <field name="internal_record_id"/>
+                            <field name="functional_record_id"/>
+                            <field name="registration_date"/>
+                        </group>
+                        <group string="Head of Household">
+                            <field name="head_of_household_id"/>
+                            <field name="household_head_name" readonly="1"/>
+                            <field name="head_of_household_internal_record_id" readonly="1"/>
+                            <field name="record_status"/>
+                        </group>
+                    </group>
+                    <group string="Household Composition &amp; Indicators">
+                        <group>
+                            <field name="household_size" readonly="1"/>
+                            <field name="dependency_ratio_display" readonly="1" string="Dependency Ratio (F04)"/>
+                            <field name="dependency_ratio" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="female_headed_household" readonly="1"/>
+                            <field name="child_headed_household" readonly="1"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <!-- Tab 1: Household Members & Composition -->
+                        <page string="Household Members" name="household_members">
+                            <field name="member_ids">
+                                <tree string="Members" editable="bottom">
+                                    <field name="individual_id"/>
+                                    <field name="surname" readonly="1"/>
+                                    <field name="given_names" readonly="1"/>
+                                    <field name="sex" readonly="1"/>
+                                    <field name="date_of_birth" readonly="1"/>
+                                    <field name="age" readonly="1"/>
+                                    <field name="relationship_to_head"/>
+                                    <field name="physical_presence_status"/>
+                                </tree>
+                            </field>
+                            <group string="Separated Family Members (F08)">
+                                <group>
+                                    <field name="members_left_behind_count"/>
+                                </group>
+                                <group>
+                                    <field name="members_left_behind_notes"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <!-- Tab 2: Case & Registration Record (Category A) -->
+                        <page string="Case &amp; Registration" name="case_registration">
+                            <group string="Registration Details (A01 - A06)">
+                                <group>
+                                    <field name="case_number"/>
+                                    <field name="registration_date"/>
+                                    <field name="point_of_entry"/>
+                                </group>
+                                <group>
+                                    <field name="registration_site"/>
+                                    <field name="registering_officer_id"/>
+                                    <field name="record_status_reason"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <!-- Tab 3: Location & Settlement (Category G) -->
+                        <page string="Location &amp; Settlement" name="location_settlement">
+                            <group string="Administrative Location (G01 - G04, G09)">
+                                <group>
+                                    <field name="host_district"/>
+                                    <field name="location_type"/>
+                                    <field name="settlement_name"/>
+                                </group>
+                                <group>
+                                    <field name="zone_cluster"/>
+                                    <field name="village_block"/>
+                                    <field name="relocation_date"/>
+                                </group>
+                            </group>
+                            <group string="Plot &amp; Dwelling (G05 - G08)">
+                                <group string="Plot Allocation">
+                                    <field name="plot_number"/>
+                                    <field name="plot_size_allocated"/>
+                                    <field name="country_code"/>
+                                </group>
+                                <group string="Urban Address &amp; Geolocation">
+                                    <field name="address_line_1"/>
+                                    <field name="address_line_2"/>
+                                    <field name="urban_lc1_zone"/>
+                                    <field name="latitude"/>
+                                    <field name="longitude"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <!-- Tab 4: Livelihood & Economic Profile (Category L) -->
+                        <page string="Livelihood &amp; Economy" name="livelihood_economy">
+                            <group string="Income &amp; Employment (L01, L02, L08)">
+                                <group>
+                                    <field name="income_sources_display" string="Main Income Sources"/>
+                                    <field name="working_age_earners_count"/>
+                                </group>
+                                <group>
+                                    <field name="monthly_household_income" groups="g2p_pbms.group_program_super_administration,base.group_erp_manager"/>
+                                </group>
+                            </group>
+                            <group string="Assets, Land &amp; Dwelling (L03, L04, L05)">
+                                <group>
+                                    <field name="cultivable_land_access"/>
+                                    <field name="shelter_type"/>
+                                </group>
+                                <group>
+                                    <field name="productive_assets_display" string="Productive Assets"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <!-- Tab 5: Targeting & Programmes (Category M) -->
+                        <page string="Targeting &amp; Programmes" name="targeting_programmes">
+                            <group string="Vulnerability &amp; Assistance Category (M01, M02)">
+                                <group>
+                                    <field name="assistance_category"/>
+                                    <field name="vulnerability_score"/>
+                                    <field name="vulnerability_score_status"/>
+                                </group>
+                                <group string="New-Arrival Status (M03)">
+                                    <field name="is_new_arrival"/>
+                                    <field name="new_arrival_end_date"/>
+                                </group>
+                            </group>
+                            <group string="PBMS Programme Enrolment &amp; Membership (M04, M05)">
+                                <group>
+                                    <field name="enrolled_program_ids" widget="many2many_tags"/>
+                                </group>
+                                <group>
+                                    <field name="enrolment_date"/>
+                                    <field name="exit_date"/>
+                                    <field name="exit_reason"/>
+                                </group>
+                            </group>
+                            <group string="Categorisation Appeals (M06)">
+                                <group>
+                                    <field name="appeal_category"/>
+                                </group>
+                                <group>
+                                    <field name="appeal_date"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <!-- Tab 6: Assistance Delivery & Payments (Categories N & O) -->
+                        <page string="Assistance &amp; Payments" name="assistance_payments">
+                            <group string="Assistance Modality &amp; Mechanism (N01 - N03, N08, N09)">
+                                <group>
+                                    <field name="delivery_modality"/>
+                                    <field name="cash_delivery_mechanism"/>
+                                    <field name="financial_service_provider"/>
+                                </group>
+                                <group>
+                                    <field name="distribution_point"/>
+                                    <field name="entitlement_amount"/>
+                                </group>
+                            </group>
+                            <group string="Payment Recipient &amp; Account (N04 - N07)">
+                                <group string="Recipients">
+                                    <field name="primary_recipient_id"/>
+                                    <field name="alternate_recipient_id"/>
+                                </group>
+                                <group string="Account / Mobile Money">
+                                    <field name="account_number" groups="g2p_pbms.group_program_super_administration,base.group_erp_manager"/>
+                                    <field name="account_number_masked" readonly="1"/>
+                                    <field name="kyc_match"/>
+                                </group>
+                            </group>
+                            <group string="Payment Execution &amp; Transactions (O01 - O05)">
+                                <group string="Cycle &amp; Authentication">
+                                    <field name="payment_cycle"/>
+                                    <field name="authentication_method_result"/>
+                                </group>
+                                <group string="Status &amp; Verification">
+                                    <field name="payment_status"/>
+                                    <field name="transaction_reference"/>
+                                    <field name="transaction_date"/>
+                                    <field name="is_pdm_sample"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <!-- Tab 7: Consent, Complaints & Lifecycle (Categories P & Q) -->
+                        <page string="Consent &amp; Complaints" name="consent_complaints">
+                            <group string="Informed Consent &amp; Data Sharing (P01 - P03)">
+                                <group string="Informed Consent">
+                                    <field name="informed_consent"/>
+                                    <field name="consent_date"/>
+                                    <field name="parent_guardian_consent"/>
+                                </group>
+                                <group string="Information Sharing Permissions">
+                                    <field name="consent_sharing_display" string="Authorized Partners" readonly="1"/>
+                                </group>
+                            </group>
+                            <group string="Complaints &amp; Grievances (P04)">
+                                <group>
+                                    <field name="complaint_reference"/>
+                                    <field name="complaint_category"/>
+                                    <field name="complaint_status"/>
+                                    <field name="complaint_date"/>
+                                </group>
+                                <group>
+                                    <field name="complaint_notes"/>
+                                </group>
+                            </group>
+                            <group string="Bio-Data Correction Requests (P05)">
+                                <group>
+                                    <field name="data_correction_ref"/>
+                                    <field name="data_correction_status"/>
+                                    <field name="data_correction_date"/>
+                                </group>
+                                <group>
+                                    <field name="data_correction_notes"/>
+                                </group>
+                            </group>
+                            <group string="Record Lifecycle, Closure &amp; Audit (Q01 - Q04)">
+                                <group string="Duplicate &amp; Status">
+                                    <field name="record_status"/>
+                                    <field name="duplicate_check"/>
+                                </group>
+                                <group string="Record Closure">
+                                    <field name="closure_reason"/>
+                                    <field name="closure_date"/>
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Tree View -->
+    <record id="view_g2p_refugee_group_registry_tree" model="ir.ui.view">
+        <field name="name">g2p.register.refugee_group.tree</field>
+        <field name="model">g2p.register.refugee_group</field>
+        <field name="arch" type="xml">
+            <tree string="Refugee Group Registry" create="0">
+                <field name="internal_record_id"/>
+                <field name="functional_record_id"/>
+                <field name="case_number"/>
+                <field name="household_head_name"/>
+                <field name="household_size"/>
+                <field name="dependency_ratio_display" string="Dependency Ratio"/>
+                <field name="host_district"/>
+                <field name="settlement_name"/>
+                <field name="record_status"/>
+            </tree>
+        </field>
+    </record>
+</odoo>

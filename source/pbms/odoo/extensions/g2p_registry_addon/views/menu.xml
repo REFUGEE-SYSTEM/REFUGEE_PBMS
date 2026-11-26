@@ -1,0 +1,27 @@
+<odoo>
+    <menuitem id="menu_g2p_farmer_registry"
+              name="Farmer Registry"
+              parent="g2p_pbms.menu_g2p_registry"
+              action="action_g2p_farmer_registry"
+              sequence="1"/>
+    <menuitem id="menu_g2p_register_household"
+              name="Register Household"
+              parent="g2p_pbms.menu_g2p_registry"
+              action="action_g2p_register_household"
+              sequence="2"/>
+    <menuitem id="menu_g2p_refugee_individual_registry"
+              name="Refugee Individual Registry"
+              parent="g2p_pbms.menu_g2p_registry"
+              action="action_g2p_refugee_individual_registry"
+              sequence="3"/>
+    <menuitem id="menu_g2p_refugee_group_registry"
+              name="Refugee Group / Household Registry"
+              parent="g2p_pbms.menu_g2p_registry"
+              action="action_g2p_refugee_group_registry"
+              sequence="4"/>
+    <menuitem id="menu_g2p_refugee_specific_need"
+              name="Refugee Specific Needs"
+              parent="g2p_pbms.menu_g2p_registry"
+              action="action_g2p_refugee_specific_need"
+              sequence="5"/>
+</odoo>

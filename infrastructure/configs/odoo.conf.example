@@ -1,0 +1,25 @@
+[options]
+; ==============================================================================
+; odoo.conf.example — Standalone Odoo 17 Configuration Template
+; Copy to infrastructure/configs/odoo.conf and replace placeholders.
+; Standalone Port: 8169 | Isolated PostgreSQL Port: 5543
+; ==============================================================================
+admin_passwd = <ODOO_ADMIN_PASSWORD>
+db_host = 127.0.0.1
+db_port = 5543
+db_user = refugee_user
+db_password = <DB_PASSWORD>
+db_name = refugee_management_db
+
+server_wide_modules = web,queue_job
+
+addons_path = ./source/odoo17/addons,./source/pbms/odoo/community-addons,./source/pbms/odoo,./extensions,./source/pbms/odoo/extensions,./source/openg2p-odoo-commons
+
+default_productivity_apps = True
+http_port = 8169
+gevent_port = 8172
+log_level = info
+data_dir = ./filestore
+
+[queue_job]
+channels = root:4

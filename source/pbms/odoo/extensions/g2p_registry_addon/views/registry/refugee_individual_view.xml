@@ -1,0 +1,370 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Action -->
+    <record id="action_g2p_refugee_individual_registry" model="ir.actions.act_window">
+        <field name="name">Refugee Individual Registry</field>
+        <field name="res_model">g2p.register.refugee_individual</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- Form View -->
+    <record id="view_g2p_refugee_individual_registry_form" model="ir.ui.view">
+        <field name="name">g2p.register.refugee_individual.form</field>
+        <field name="model">g2p.register.refugee_individual</field>
+        <field name="arch" type="xml">
+            <form string="Refugee Individual Registry" create="0">
+                <sheet>
+                    <field name="photo" widget="image" class="oe_avatar" options="{'preview_image': 'photo'}"/>
+                    <div class="oe_title">
+                        <label for="name" string="Full Name"/>
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group string="Registry Identity">
+                        <group>
+                            <field name="internal_record_id"/>
+                            <field name="functional_record_id"/>
+                            <field name="link_internal_record_id"/>
+                            <field name="link_foundational_id"/>
+                        </group>
+                        <group>
+                            <field name="record_status"/>
+                            <field name="registration_date"/>
+                            <field name="arrival_date"/>
+                            <field name="document_number"/>
+                            <field name="legal_status"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <!-- Tab 1: Personal Demographics -->
+                        <page string="Personal Demographics" name="personal_demographics">
+                            <group string="Names and Core Demographics">
+                                <group>
+                                    <field name="surname"/>
+                                    <field name="given_names"/>
+                                    <field name="other_names"/>
+                                    <field name="sex"/>
+                                </group>
+                                <group>
+                                    <field name="date_of_birth"/>
+                                    <field name="date_of_birth_estimated"/>
+                                    <field name="age" readonly="1"/>
+                                    <field name="place_of_birth"/>
+                                </group>
+                            </group>
+                            <group string="Origin, Civil Status &amp; Culture">
+                                <group>
+                                    <field name="country_of_origin"/>
+                                    <field name="country_of_origin_code"/>
+                                    <field name="nationality"/>
+                                    <field name="marital_status"/>
+                                </group>
+                                <group>
+                                    <field name="preferred_languages_display" string="Preferred Languages"/>
+                                    <field name="literacy_status"/>
+                                    <field name="ethnicity_tribe" groups="g2p_pbms.group_program_super_administration,base.group_erp_manager"/>
+                                    <field name="religion" groups="g2p_pbms.group_program_super_administration,base.group_erp_manager"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <!-- Tab 2: Biometrics & Identity Documents -->
+                        <page string="Biometrics &amp; Identity Documents" name="biometrics_documents">
+                            <group string="Identity Document (D01)">
+                                <group>
+                                    <field name="document_type"/>
+                                    <field name="document_number"/>
+                                </group>
+                                <group>
+                                    <field name="document_issue_date"/>
+                                    <field name="document_expiry_date"/>
+                                </group>
+                            </group>
+                            <group string="Biometric Enrolment &amp; Verification (C01 - C05)">
+                                <group string="Fingerprints &amp; Iris">
+                                    <field name="biometric_fingerprint_status"/>
+                                    <field name="fingerprint_token_ref"/>
+                                    <field name="biometric_iris_status"/>
+                                    <field name="iris_token_ref"/>
+                                </group>
+                                <group string="Exemption &amp; Authentication">
+                                    <field name="biometric_exemption_reason"/>
+                                    <field name="last_biometric_verification_date"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <!-- Tab 3: Legal Status & RSD -->
+                        <page string="Legal Status &amp; RSD" name="legal_status_rsd">
+                            <group string="Protection Status &amp; Registration">
+                                <group>
+                                    <field name="legal_status"/>
+                                </group>
+                                <group>
+                                    <field name="independent_registration_at_18"/>
+                                    <field name="independent_registration_date"/>
+                                </group>
+                            </group>
+                            <group string="RSD Milestones &amp; Decisions">
+                                <group string="First Instance (REC)">
+                                    <field name="rsd_application_date"/>
+                                    <field name="rsd_interview_date"/>
+                                    <field name="rec_decision"/>
+                                    <field name="rec_decision_date"/>
+                                </group>
+                                <group string="Appeals (RAB)">
+                                    <field name="rsd_appeal_stage"/>
+                                    <field name="rsd_appeal_date"/>
+                                </group>
+                            </group>
+                            <group string="Security Vetting">
+                                <group>
+                                    <field name="security_screening_status"/>
+                                    <field name="security_screening_cleared" readonly="1"/>
+                                </group>
+                                <group>
+                                    <field name="security_screening_date"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <!-- Tab 4: Specific Needs & Protection (Category I) -->
+                        <page string="Specific Needs &amp; Protection" name="specific_needs_protection" groups="g2p_pbms.group_program_super_administration,base.group_erp_manager">
+                            <group string="Specific Needs Identification (I01)">
+                                <field name="specific_need_ids" widget="many2many_tags" options="{'no_create_edit': False}"/>
+                            </group>
+                            <group string="Child Protection &amp; Care Arrangements (I02, I03)">
+                                <group>
+                                    <field name="uasc_status"/>
+                                </group>
+                                <group>
+                                    <field name="caregiver_individual_id"/>
+                                    <field name="caregiver_relationship"/>
+                                </group>
+                            </group>
+                            <group string="Protection Referral (I04)">
+                                <group>
+                                    <field name="has_protection_referral"/>
+                                </group>
+                                <group>
+                                    <field name="protection_referral_date"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <!-- Tab 5: Health, Disability &amp; Nutrition (Category J) -->
+                        <page string="Health, Disability &amp; Nutrition" name="health_disability_nutrition" groups="g2p_pbms.group_program_super_administration,base.group_erp_manager">
+                            <group string="Washington Group Short Set on Disability (J01)">
+                                <group>
+                                    <field name="wg_seeing"/>
+                                    <field name="wg_hearing"/>
+                                    <field name="wg_walking"/>
+                                </group>
+                                <group>
+                                    <field name="wg_remembering"/>
+                                    <field name="wg_selfcare"/>
+                                    <field name="wg_communicating"/>
+                                </group>
+                            </group>
+                            <group string="Medical Conditions &amp; Chronic Illness (J02)">
+                                <group>
+                                    <field name="has_serious_medical_condition"/>
+                                </group>
+                                <group>
+                                    <field name="serious_medical_condition_notes"/>
+                                </group>
+                            </group>
+                            <group string="Maternal &amp; Child Health (J03 - J05)">
+                                <group string="Pregnancy / Lactation (J03)">
+                                    <field name="pregnant_lactating_status"/>
+                                </group>
+                                <group string="Child Under 5 Nutrition (J04)">
+                                    <field name="muac_score"/>
+                                    <field name="nutrition_status"/>
+                                </group>
+                                <group string="Immunization (J05)">
+                                    <field name="vaccination_status"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <!-- Tab 6: Education & Skills (Category K) -->
+                        <page string="Education &amp; Skills" name="education_skills">
+                            <group string="Formal Education &amp; Schooling (K01, K02)">
+                                <group>
+                                    <field name="education_level"/>
+                                </group>
+                                <group>
+                                    <field name="school_enrolment"/>
+                                </group>
+                            </group>
+                            <group string="Livelihood &amp; Vocational Skills (K03)">
+                                <field name="occupation_skills_display" string="Occupation / Skills"/>
+                            </group>
+                        </page>
+
+                        <!-- Tab 7: Programme Targeting & Enrolment (Category M) -->
+                        <page string="Targeting &amp; Programmes" name="targeting_programmes">
+                            <group string="Vulnerability &amp; Assistance Category (M01, M02)">
+                                <group>
+                                    <field name="assistance_category"/>
+                                    <field name="vulnerability_score"/>
+                                    <field name="vulnerability_score_status"/>
+                                </group>
+                                <group string="New-Arrival Status (M03)">
+                                    <field name="is_new_arrival"/>
+                                    <field name="new_arrival_end_date"/>
+                                </group>
+                            </group>
+                            <group string="PBMS Programme Enrolment &amp; Membership (M04, M05)">
+                                <group>
+                                    <field name="enrolled_program_ids" widget="many2many_tags"/>
+                                </group>
+                                <group>
+                                    <field name="enrolment_date"/>
+                                    <field name="exit_date"/>
+                                    <field name="exit_reason"/>
+                                </group>
+                            </group>
+                            <group string="Categorisation Appeals (M06)">
+                                <group>
+                                    <field name="appeal_category"/>
+                                </group>
+                                <group>
+                                    <field name="appeal_date"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <!-- Tab 8: Assistance Delivery & Payments (Categories N & O) -->
+                        <page string="Assistance &amp; Payments" name="assistance_payments">
+                            <group string="Assistance Modality &amp; Mechanism (N01 - N03, N08, N09)">
+                                <group>
+                                    <field name="delivery_modality"/>
+                                    <field name="cash_delivery_mechanism"/>
+                                    <field name="financial_service_provider"/>
+                                </group>
+                                <group>
+                                    <field name="distribution_point"/>
+                                    <field name="entitlement_amount"/>
+                                </group>
+                            </group>
+                            <group string="Payment Recipient &amp; Account (N04 - N07)">
+                                <group string="Recipients">
+                                    <field name="primary_recipient_id"/>
+                                    <field name="alternate_recipient_id"/>
+                                </group>
+                                <group string="Account / Mobile Money">
+                                    <field name="account_number" groups="g2p_pbms.group_program_super_administration,base.group_erp_manager"/>
+                                    <field name="account_number_masked" readonly="1"/>
+                                    <field name="kyc_match"/>
+                                </group>
+                            </group>
+                            <group string="Payment Execution &amp; Transactions (O01 - O05)">
+                                <group string="Cycle &amp; Authentication">
+                                    <field name="payment_cycle"/>
+                                    <field name="authentication_method_result"/>
+                                </group>
+                                <group string="Status &amp; Verification">
+                                    <field name="payment_status"/>
+                                    <field name="transaction_reference"/>
+                                    <field name="transaction_date"/>
+                                    <field name="is_pdm_sample"/>
+                                </group>
+                            </group>
+                        </page>
+
+                        <!-- Tab 9: Consent, Complaints & Lifecycle (Categories P & Q) -->
+                        <page string="Consent &amp; Complaints" name="consent_complaints">
+                            <group string="Informed Consent &amp; Data Sharing (P01 - P03)">
+                                <group string="Informed Consent">
+                                    <field name="informed_consent"/>
+                                    <field name="consent_date"/>
+                                    <field name="parent_guardian_consent"/>
+                                </group>
+                                <group string="Information Sharing Permissions">
+                                    <field name="consent_sharing_display" string="Authorized Partners" readonly="1"/>
+                                </group>
+                            </group>
+                            <group string="Complaints &amp; Grievances (P04)">
+                                <group>
+                                    <field name="complaint_reference"/>
+                                    <field name="complaint_category"/>
+                                    <field name="complaint_status"/>
+                                    <field name="complaint_date"/>
+                                </group>
+                                <group>
+                                    <field name="complaint_notes"/>
+                                </group>
+                            </group>
+                            <group string="Bio-Data Correction Requests (P05)">
+                                <group>
+                                    <field name="data_correction_ref"/>
+                                    <field name="data_correction_status"/>
+                                    <field name="data_correction_date"/>
+                                </group>
+                                <group>
+                                    <field name="data_correction_notes"/>
+                                </group>
+                            </group>
+                            <group string="Record Lifecycle, Closure &amp; Audit (Q01 - Q04)">
+                                <group string="Duplicate &amp; Status">
+                                    <field name="record_status"/>
+                                    <field name="duplicate_check"/>
+                                </group>
+                                <group string="Record Closure">
+                                    <field name="closure_reason"/>
+                                    <field name="closure_date"/>
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Specific Need Category Views & Action -->
+    <record id="view_g2p_refugee_specific_need_tree" model="ir.ui.view">
+        <field name="name">g2p.refugee.specific_need.tree</field>
+        <field name="model">g2p.refugee.specific_need</field>
+        <field name="arch" type="xml">
+            <tree string="Specific Needs Categories" editable="bottom">
+                <field name="code"/>
+                <field name="name"/>
+                <field name="description"/>
+                <field name="active"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_g2p_refugee_specific_need" model="ir.actions.act_window">
+        <field name="name">Specific Needs Categories</field>
+        <field name="res_model">g2p.refugee.specific_need</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <!-- Tree View -->
+    <record id="view_g2p_refugee_individual_registry_tree" model="ir.ui.view">
+        <field name="name">g2p.register.refugee_individual.tree</field>
+        <field name="model">g2p.register.refugee_individual</field>
+        <field name="arch" type="xml">
+            <tree string="Refugee Individual Registry" create="0">
+                <field name="internal_record_id"/>
+                <field name="functional_record_id"/>
+                <field name="surname"/>
+                <field name="given_names"/>
+                <field name="document_number"/>
+                <field name="sex"/>
+                <field name="date_of_birth"/>
+                <field name="age"/>
+                <field name="country_of_origin"/>
+                <field name="nationality"/>
+                <field name="legal_status"/>
+                <field name="record_status"/>
+            </tree>
+        </field>
+    </record>
+</odoo>

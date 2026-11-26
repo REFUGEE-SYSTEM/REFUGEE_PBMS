@@ -1,0 +1,1 @@
+git+https://github.com/OpenG2P/openg2p-social-registry-community-addons@develop
