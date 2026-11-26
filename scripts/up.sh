@@ -54,6 +54,15 @@ else
   fi
 fi
 
+echo "[up] Granting admin user all g2p_pbms security groups ..."
+docker compose exec -T postgres psql -v ON_ERROR_STOP=1 -U "$DB_USER" -d "$ODOO_DB" <<'SQL'
+INSERT INTO res_groups_users_rel (gid, uid)
+SELECT res_id, 2
+FROM ir_model_data
+WHERE module = 'g2p_pbms' AND model = 'res.groups'
+ON CONFLICT DO NOTHING;
+SQL
+
 echo "[up] Configuring PBMS ir_config_parameter URLs ..."
 STAFF_URL="http://localhost:${PBMS_STAFF_API_PORT:-8350}"
 BRIDGE_URL="http://localhost:8999/unused"
