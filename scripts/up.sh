@@ -65,7 +65,7 @@ SQL
 
 echo "[up] Configuring PBMS ir_config_parameter URLs ..."
 STAFF_URL="http://pbms-staff-api:8000"
-BRIDGE_URL="http://localhost:8999/unused"
+BRIDGE_URL="http://host.docker.internal:${BRIDGE_API_PORT:-8395}"
 docker compose exec -T postgres psql -v ON_ERROR_STOP=1 -U "$DB_USER" -d "$ODOO_DB" \
   -v staff_url="$STAFF_URL" -v bridge_url="$BRIDGE_URL" <<'SQL'
 INSERT INTO ir_config_parameter (key, value, create_uid, create_date, write_uid, write_date)
