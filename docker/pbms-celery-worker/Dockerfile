@@ -34,4 +34,4 @@ RUN apk del --no-network .build-deps
 
 ENV PYTHONUNBUFFERED=1
 
-CMD ["celery", "-A", "openg2p_bg_task_celery_workers.main.celery_app", "worker", "-Q", "celery,bg_task_worker_queue", "--loglevel=info"]
+CMD ["celery", "-A", "openg2p_bg_task_celery_workers.main.celery_app", "worker", "-Q", "bg_task_worker_queue", "--loglevel=info"]
