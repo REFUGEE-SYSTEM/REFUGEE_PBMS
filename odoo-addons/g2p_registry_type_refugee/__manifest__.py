@@ -9,6 +9,11 @@
     "data": [
         "views/rule_views.xml",
     ],
+    "assets": {
+        "web.assets_backend": [
+            "g2p_registry_type_refugee/static/src/xml/g2p_beneficiaries_info_refugee.xml",
+        ],
+    },
     "installable": True,
     "application": False,
 }

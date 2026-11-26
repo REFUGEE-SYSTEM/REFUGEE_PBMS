@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates xml:space="preserve">
+    <t t-name="g2p_beneficiaries_info_refugee_ext" t-inherit="g2p_beneficiaries_info_tpl" t-inherit-mode="extension">
+        <xpath expr="//thead/tr" position="inside">
+            <t t-if="state.target_registry === 'refugees'">
+                <th class="px-2 py-1">Internal ID</th>
+                <th class="px-2 py-1">Functional ID</th>
+                <th class="px-2 py-1">Name</th>
+                <th class="px-2 py-1">Gender</th>
+                <th class="px-2 py-1">Birth Date</th>
+                <th class="px-2 py-1">Nationality</th>
+                <th class="px-2 py-1">Legal Status</th>
+                <th class="px-2 py-1">Presence</th>
+                <th class="px-2 py-1">Status</th>
+            </t>
+        </xpath>
+        <xpath expr="//tbody//t[@t-foreach='state.records']/tr" position="inside">
+            <t t-if="state.target_registry === 'refugees'">
+                <td class="px-2 py-1 text-muted"><t t-esc="record.internal_record_id"/></td>
+                <td class="px-2 py-1 fw-semibold text-primary"><t t-esc="record.functional_record_id"/></td>
+                <td class="px-2 py-1"><t t-esc="record.record_name"/></td>
+                <td class="px-2 py-1"><t t-esc="record.gender"/></td>
+                <td class="px-2 py-1"><t t-esc="record.birth_date"/></td>
+                <td class="px-2 py-1"><t t-esc="record.nationality"/></td>
+                <td class="px-2 py-1"><t t-esc="record.legal_status"/></td>
+                <td class="px-2 py-1"><t t-esc="record.presence_status"/></td>
+                <td class="px-2 py-1"><t t-esc="record.record_status"/></td>
+            </t>
+        </xpath>
+    </t>
+</templates>
