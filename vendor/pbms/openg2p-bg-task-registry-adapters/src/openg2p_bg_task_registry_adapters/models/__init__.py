@@ -1,5 +1,7 @@
 from .beneficiary_list_summary_farmer import BeneficiaryListSummaryFarmer
 from .beneficiary_list_summary_household import BeneficiaryListSummaryHousehold
+from .beneficiary_list_summary_refugee import BeneficiaryListSummaryRefugee
 from .register_household import G2PRegisterHousehold
+from .register_refugee import G2PRegisterRefugee
 from .registry_farmer import G2PFarmerRegistry
 from .registry_type import G2PRegistryType

@@ -33,9 +33,9 @@ HAS_ODOO="$(docker compose exec -T postgres psql -U "$DB_USER" -d "$ODOO_DB" -tA
   "SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name='ir_module_module'" || true)"
 
 if [[ "$HAS_ODOO" != "1" ]]; then
-  echo "[up] Initializing Odoo database '${ODOO_DB}' with base,queue_job,g2p_pbms ..."
+  echo "[up] Initializing Odoo database '${ODOO_DB}' with base,queue_job,g2p_pbms,g2p_registry_type_refugee ..."
   docker compose run --rm --no-deps -T pbms-odoo \
-    odoo -d "$ODOO_DB" -i base,queue_job,g2p_pbms --stop-after-init --without-demo=all
+    odoo -d "$ODOO_DB" -i base,queue_job,g2p_pbms,g2p_registry_type_refugee --stop-after-init --without-demo=all
 
   echo "[up] Setting Odoo admin password ..."
   ADMIN_HASH="$(docker compose run --rm --no-deps --entrypoint python3 -T -e NEW_PW="$PBMS_ODOO_ADMIN_PASSWORD" pbms-odoo \
@@ -43,6 +43,15 @@ if [[ "$HAS_ODOO" != "1" ]]; then
   docker compose exec -T postgres psql -v ON_ERROR_STOP=1 -U "$DB_USER" -d "$ODOO_DB" -v pw_hash="$ADMIN_HASH" <<'SQL'
 UPDATE res_users SET password = :'pw_hash' WHERE login = 'admin';
 SQL
+else
+  HAS_REFUGEE_MOD="$(docker compose exec -T postgres psql -U "$DB_USER" -d "$ODOO_DB" -tAc \
+    "SELECT state FROM ir_module_module WHERE name='g2p_registry_type_refugee'" || true)"
+  if [[ "$HAS_REFUGEE_MOD" != "installed" ]]; then
+    echo "[up] Installing g2p_registry_type_refugee in '${ODOO_DB}' ..."
+    docker compose stop pbms-odoo >/dev/null 2>&1 || true
+    docker compose run --rm --no-deps -T pbms-odoo \
+      odoo -d "$ODOO_DB" -i g2p_registry_type_refugee --stop-after-init --without-demo=all
+  fi
 fi
 
 echo "[up] Configuring PBMS ir_config_parameter URLs ..."
