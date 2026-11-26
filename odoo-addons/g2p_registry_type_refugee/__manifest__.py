@@ -6,7 +6,9 @@
     "author": "OpenG2P",
     "license": "LGPL-3",
     "depends": ["g2p_registry_type_addon", "g2p_pbms"],
-    "data": [],
+    "data": [
+        "views/rule_views.xml",
+    ],
     "installable": True,
     "application": False,
 }
