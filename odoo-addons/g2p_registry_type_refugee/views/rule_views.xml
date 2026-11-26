@@ -38,4 +38,17 @@
             </xpath>
         </field>
     </record>
+
+    <record id="view_g2p_eligibility_summary_wizard_form_inherit_beneficiaries_refugee" model="ir.ui.view">
+        <field name="name">g2p.bgtask.summary.wizard.form.inherit.beneficiaries.refugee</field>
+        <field name="model">g2p.bgtask.summary.wizard</field>
+        <field name="inherit_id" ref="g2p_registry_addon.view_g2p_eligibility_summary_wizard_form_inherit_beneficiaries"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[@name='beneficiary_search_household']" position="after">
+                <group name="beneficiary_search_refugees" invisible="target_registry != 'refugees'">
+                    <widget name="g2p_beneficiaries_widget" model="g2p.register.refugees" id="refugee_beneficiary_search_widget"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
 </odoo>

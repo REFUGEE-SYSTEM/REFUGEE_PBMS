@@ -5,7 +5,7 @@
     "summary": "Adds Refugee Registry support to OpenG2P PBMS",
     "author": "OpenG2P",
     "license": "LGPL-3",
-    "depends": ["g2p_registry_type_addon", "g2p_pbms"],
+    "depends": ["g2p_registry_type_addon", "g2p_pbms", "g2p_registry_addon"],
     "data": [
         "views/rule_views.xml",
     ],
