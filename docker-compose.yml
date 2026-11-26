@@ -64,6 +64,122 @@ services:
       retries: 20
       start_period: 20s
 
+  pbms-staff-api:
+    build:
+      context: .
+      dockerfile: docker/pbms-staff-api/Dockerfile
+    restart: unless-stopped
+    environment:
+      STAFF_PORTAL_API_PORT: "8000"
+      STAFF_PORTAL_API_AUTH_ENABLED: "false"
+      STAFF_PORTAL_API_DB_DRIVER: postgresql
+      STAFF_PORTAL_API_DB_USERNAME: ${PBMS_DB_USER:-pbmsuser}
+      STAFF_PORTAL_API_DB_PASSWORD: ${PBMS_DB_PASSWORD}
+      STAFF_PORTAL_API_DB_HOSTNAME: postgres
+      STAFF_PORTAL_API_DB_PORT: "5432"
+      STAFF_PORTAL_API_DB_DBNAME: ${PBMS_BGTASK_DB:-bgtaskdb}
+      STAFF_PORTAL_API_DB_USERNAME_SR: ${PBMS_SR_DB_USER:-pbms_reader}
+      STAFF_PORTAL_API_DB_PASSWORD_SR: ${PBMS_SR_DB_PASSWORD}
+      STAFF_PORTAL_API_DB_HOSTNAME_SR: ${PBMS_SR_DB_HOST:-host.docker.internal}
+      STAFF_PORTAL_API_DB_PORT_SR: ${PBMS_SR_DB_PORT:-5535}
+      STAFF_PORTAL_API_DB_DBNAME_SR: ${PBMS_SR_DB_NAME:-refugee_registry_db}
+      STAFF_PORTAL_API_DB_USERNAME_PBMS: ${PBMS_DB_USER:-pbmsuser}
+      STAFF_PORTAL_API_DB_PASSWORD_PBMS: ${PBMS_DB_PASSWORD}
+      STAFF_PORTAL_API_DB_HOSTNAME_PBMS: postgres
+      STAFF_PORTAL_API_DB_PORT_PBMS: "5432"
+      STAFF_PORTAL_API_DB_DBNAME_PBMS: ${PBMS_ODOO_DB:-pbmsdb}
+      STAFF_PORTAL_API_CELERY_BROKER_URL: redis://redis:6379/0
+      STAFF_PORTAL_API_CELERY_BACKEND_URL: redis://redis:6379/0
+    ports:
+      - "${PBMS_STAFF_API_PORT:-8350}:8000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - refugee_pbms_net
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8000/ping >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 15s
+
+  pbms-celery-worker:
+    build:
+      context: .
+      dockerfile: docker/pbms-celery-worker/Dockerfile
+    restart: unless-stopped
+    environment:
+      BG_TASK_CELERY_WORKERS_CELERY_BROKER_URL: redis://redis:6379/0
+      BG_TASK_CELERY_WORKERS_CELERY_BACKEND_URL: redis://redis:6379/0
+      BG_TASK_CELERY_WORKERS_DB_DRIVER: postgresql
+      BG_TASK_CELERY_WORKERS_DB_USERNAME: ${PBMS_DB_USER:-pbmsuser}
+      BG_TASK_CELERY_WORKERS_DB_PASSWORD: ${PBMS_DB_PASSWORD}
+      BG_TASK_CELERY_WORKERS_DB_HOSTNAME: postgres
+      BG_TASK_CELERY_WORKERS_DB_PORT: "5432"
+      BG_TASK_CELERY_WORKERS_DB_DBNAME: ${PBMS_BGTASK_DB:-bgtaskdb}
+      BG_TASK_CELERY_WORKERS_DB_USERNAME_SR: ${PBMS_SR_DB_USER:-pbms_reader}
+      BG_TASK_CELERY_WORKERS_DB_PASSWORD_SR: ${PBMS_SR_DB_PASSWORD}
+      BG_TASK_CELERY_WORKERS_DB_HOSTNAME_SR: ${PBMS_SR_DB_HOST:-host.docker.internal}
+      BG_TASK_CELERY_WORKERS_DB_PORT_SR: ${PBMS_SR_DB_PORT:-5535}
+      BG_TASK_CELERY_WORKERS_DB_DBNAME_SR: ${PBMS_SR_DB_NAME:-refugee_registry_db}
+      BG_TASK_CELERY_WORKERS_DB_USERNAME_PBMS: ${PBMS_DB_USER:-pbmsuser}
+      BG_TASK_CELERY_WORKERS_DB_PASSWORD_PBMS: ${PBMS_DB_PASSWORD}
+      BG_TASK_CELERY_WORKERS_DB_HOSTNAME_PBMS: postgres
+      BG_TASK_CELERY_WORKERS_DB_PORT_PBMS: "5432"
+      BG_TASK_CELERY_WORKERS_DB_DBNAME_PBMS: ${PBMS_ODOO_DB:-pbmsdb}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - refugee_pbms_net
+    depends_on:
+      pbms-staff-api:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  pbms-celery-beat:
+    build:
+      context: .
+      dockerfile: docker/pbms-celery-beat/Dockerfile
+    restart: unless-stopped
+    environment:
+      BG_TASK_CELERY_BEAT_CELERY_BROKER_URL: redis://redis:6379/0
+      BG_TASK_CELERY_BEAT_CELERY_BACKEND_URL: redis://redis:6379/0
+      BG_TASK_CELERY_BEAT_PRODUCER_FREQUENCY: "20"
+      BG_TASK_CELERY_BEAT_BATCH_SIZE: "500"
+      BG_TASK_CELERY_BEAT_NO_OF_TASKS_TO_PROCESS: "4"
+      BG_TASK_CELERY_BEAT_BG_TASK_WORKER_QUEUE: bg_task_worker_queue
+      BG_TASK_CELERY_BEAT_DB_DRIVER: postgresql
+      BG_TASK_CELERY_BEAT_DB_USERNAME: ${PBMS_DB_USER:-pbmsuser}
+      BG_TASK_CELERY_BEAT_DB_PASSWORD: ${PBMS_DB_PASSWORD}
+      BG_TASK_CELERY_BEAT_DB_HOSTNAME: postgres
+      BG_TASK_CELERY_BEAT_DB_PORT: "5432"
+      BG_TASK_CELERY_BEAT_DB_DBNAME: ${PBMS_BGTASK_DB:-bgtaskdb}
+      BG_TASK_CELERY_BEAT_DB_USERNAME_SR: ${PBMS_SR_DB_USER:-pbms_reader}
+      BG_TASK_CELERY_BEAT_DB_PASSWORD_SR: ${PBMS_SR_DB_PASSWORD}
+      BG_TASK_CELERY_BEAT_DB_HOSTNAME_SR: ${PBMS_SR_DB_HOST:-host.docker.internal}
+      BG_TASK_CELERY_BEAT_DB_PORT_SR: ${PBMS_SR_DB_PORT:-5535}
+      BG_TASK_CELERY_BEAT_DB_DBNAME_SR: ${PBMS_SR_DB_NAME:-refugee_registry_db}
+      BG_TASK_CELERY_BEAT_DB_USERNAME_PBMS: ${PBMS_DB_USER:-pbmsuser}
+      BG_TASK_CELERY_BEAT_DB_PASSWORD_PBMS: ${PBMS_DB_PASSWORD}
+      BG_TASK_CELERY_BEAT_DB_HOSTNAME_PBMS: postgres
+      BG_TASK_CELERY_BEAT_DB_PORT_PBMS: "5432"
+      BG_TASK_CELERY_BEAT_DB_DBNAME_PBMS: ${PBMS_ODOO_DB:-pbmsdb}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - refugee_pbms_net
+    depends_on:
+      pbms-staff-api:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
 volumes:
   refugee_pbms_postgres_data:
   refugee_pbms_redis_data:
