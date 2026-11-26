@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <templates xml:space="preserve">
-    <t t-name="g2p_beneficiaries_info_refugee_ext" t-inherit="g2p_beneficiaries_info_tpl" t-inherit-mode="extension">
+    <t t-name="g2p_beneficiaries_info_refugee_ext" t-inherit="g2p_registry_addon.g2p_beneficiaries_info_tpl" t-inherit-mode="extension">
         <xpath expr="//thead/tr" position="inside">
             <t t-if="state.target_registry === 'refugees'">
                 <th class="px-2 py-1">Internal ID</th>
