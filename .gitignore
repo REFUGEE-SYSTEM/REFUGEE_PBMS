@@ -1,0 +1,61 @@
+# Refugee Management Standalone Project .gitignore
+
+# Environments & Secrets
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+*.p12
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Odoo runtime & Filestore
+filestore/
+sessions/
+*.log
+logs/*
+!logs/.gitkeep
+
+# Databases & Backups
+*.dump
+*.sql
+*.tar.gz
+database/backups/*
+!database/backups/.gitkeep
+
+# OS & Editor
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*~
