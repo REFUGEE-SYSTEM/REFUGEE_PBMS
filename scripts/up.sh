@@ -23,9 +23,43 @@ set -a
 source .env
 set +a
 
-echo "[up] Building and starting Refugee-PBMS services ..."
+ODOO_DB="${PBMS_ODOO_DB:-pbmsdb}"
+DB_USER="${PBMS_DB_USER:-pbmsuser}"
+
+echo "[up] Starting Postgres and Redis ..."
+docker compose up -d --wait postgres redis
+
+HAS_ODOO="$(docker compose exec -T postgres psql -U "$DB_USER" -d "$ODOO_DB" -tAc \
+  "SELECT 1 FROM information_schema.tables WHERE table_schema='public' AND table_name='ir_module_module'" || true)"
+
+if [[ "$HAS_ODOO" != "1" ]]; then
+  echo "[up] Initializing Odoo database '${ODOO_DB}' with base,queue_job,g2p_pbms ..."
+  docker compose run --rm --no-deps -T pbms-odoo \
+    odoo -d "$ODOO_DB" -i base,queue_job,g2p_pbms --stop-after-init --without-demo=all
+
+  echo "[up] Setting Odoo admin password ..."
+  ADMIN_HASH="$(docker compose run --rm --no-deps --entrypoint python3 -T -e NEW_PW="$PBMS_ODOO_ADMIN_PASSWORD" pbms-odoo \
+    -c 'import os; from passlib.context import CryptContext; print(CryptContext(["pbkdf2_sha512"]).hash(os.environ["NEW_PW"]))')"
+  docker compose exec -T postgres psql -v ON_ERROR_STOP=1 -U "$DB_USER" -d "$ODOO_DB" -v pw_hash="$ADMIN_HASH" <<'SQL'
+UPDATE res_users SET password = :'pw_hash' WHERE login = 'admin';
+SQL
+fi
+
+echo "[up] Configuring PBMS ir_config_parameter URLs ..."
+STAFF_URL="http://localhost:${PBMS_STAFF_API_PORT:-8350}"
+BRIDGE_URL="http://localhost:8999/unused"
+docker compose exec -T postgres psql -v ON_ERROR_STOP=1 -U "$DB_USER" -d "$ODOO_DB" \
+  -v staff_url="$STAFF_URL" -v bridge_url="$BRIDGE_URL" <<'SQL'
+INSERT INTO ir_config_parameter (key, value, create_uid, create_date, write_uid, write_date)
+VALUES
+  ('g2p_pbms.staff_portal_api_url', :'staff_url', 1, NOW(), 1, NOW()),
+  ('g2p_pbms.g2p_bridge_api_url', :'bridge_url', 1, NOW(), 1, NOW())
+ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, write_date = NOW();
+SQL
+
+echo "[up] Building and starting all Refugee-PBMS services ..."
 docker compose up -d --build --wait
 
-echo "[up] Refugee-PBMS infrastructure is ready!"
-echo "  Postgres:      localhost:${PBMS_POSTGRES_PORT:-5635}"
-echo "  Redis:         localhost:${PBMS_REDIS_PORT:-6581}"
+echo "[up] Refugee-PBMS is ready!"
+echo "  PBMS Odoo:     http://localhost:${PBMS_ODOO_PORT:-8369}/web/login"
+echo "  Staff API:     http://localhost:${PBMS_STAFF_API_PORT:-8350}/docs"

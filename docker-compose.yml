@@ -34,9 +34,40 @@ services:
       timeout: 5s
       retries: 15
 
+  pbms-odoo:
+    image: openg2p/openg2p-pbms-core@sha256:6b4d4a40b11644ec9cb5133bfcd622aca45aa6ecd71880b9f92db149450a86f8
+    pull_policy: never
+    restart: unless-stopped
+    environment:
+      ODOO_DATABASE_HOST: postgres
+      ODOO_DATABASE_PORT_NUMBER: "5432"
+      ODOO_DATABASE_USER: ${PBMS_DB_USER:-pbmsuser}
+      ODOO_DATABASE_PASSWORD: ${PBMS_DB_PASSWORD}
+      ODOO_DATABASE_NAME: ${PBMS_ODOO_DB:-pbmsdb}
+      ODOO_PASSWORD: ${PBMS_ODOO_ADMIN_PASSWORD}
+      ODOO_SERVER_WIDE_MODULES: web,queue_job
+      ODOO_DATA_DIR: /var/lib/odoo
+    ports:
+      - "${PBMS_ODOO_PORT:-8369}:8069"
+    volumes:
+      - refugee_pbms_odoo_data:/var/lib/odoo
+      - ./odoo-addons:/opt/odoo/extraaddons/refugee-addons:ro
+    networks:
+      - refugee_pbms_net
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8069/web/login >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+
 volumes:
   refugee_pbms_postgres_data:
   refugee_pbms_redis_data:
+  refugee_pbms_odoo_data:
 
 networks:
   refugee_pbms_net:
