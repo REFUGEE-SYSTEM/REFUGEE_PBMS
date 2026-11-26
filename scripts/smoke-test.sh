@@ -27,14 +27,26 @@ set +a
 pass() { echo "[PASS] $*"; }
 fail() { echo "[FAIL] $*" >&2; exit 1; }
 
-# 1. All 6 containers running
+# 1. All 6 containers running (not restarting)
 for svc in postgres redis pbms-odoo pbms-staff-api pbms-celery-worker pbms-celery-beat; do
   cid="$(docker compose ps -q "$svc")"
   [[ -n "$cid" ]] || fail "Service $svc has no container"
-  state="$(docker inspect -f '{{.State.Running}}' "$cid")"
-  [[ "$state" == "true" ]] || fail "Service $svc is not running"
+  status="$(docker inspect -f '{{.State.Status}}' "$cid")"
+  [[ "$status" == "running" ]] || fail "Service $svc status is '$status' (expected running)"
 done
 pass "All 6 compose services running"
+
+# 1b. Celery worker responds to ping (allow brief startup mingle)
+ping_ok=0
+for _ in $(seq 1 5); do
+  if docker compose exec -T pbms-celery-worker celery -A openg2p_bg_task_celery_workers.main.celery_app inspect ping -t 5 >/dev/null 2>&1; then
+    ping_ok=1
+    break
+  fi
+  sleep 2
+done
+[[ "$ping_ok" == "1" ]] || fail "Celery worker failed inspect ping"
+pass "Celery worker responds to inspect ping"
 
 # 2. Postgres databases exist
 dbs="$(docker compose exec -T postgres psql -U "${PBMS_DB_USER:-pbmsuser}" -d postgres -tAc "\l")"

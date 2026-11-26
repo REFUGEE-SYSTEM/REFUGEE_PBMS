@@ -11,6 +11,7 @@ RUN pip install --upgrade pip setuptools && \
     pip install --no-cache-dir \
         "greenlet" \
         "jinja2" \
+        "packaging" \
         "psycopg[binary]" \
         "openg2p-fastapi-common==1.1.6" \
         "openg2p-fastapi-auth==1.1.6" \
