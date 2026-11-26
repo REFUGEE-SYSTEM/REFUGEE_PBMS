@@ -80,9 +80,21 @@ def rpc(service, method, args):
 uid = rpc("common", "authenticate", [env["PBMS_ODOO_DB"], "admin", env["PBMS_ODOO_ADMIN_PASSWORD"], {}])
 assert isinstance(uid, int) and uid > 0, "Admin login failed"
 fg = rpc("object", "execute_kw", [env["PBMS_ODOO_DB"], uid, env["PBMS_ODOO_ADMIN_PASSWORD"], "g2p.program.definition", "fields_get", ["target_registry"], {"attributes": ["selection"]}])
-assert any(k == "refugees" for k, _ in fg["target_registry"]["selection"]), "refugees missing from target_registry"
+assert any(k == "refugees" for k, _ in fg["target_registry"]["selection"]), "refugees missing from g2p.program.definition.target_registry"
+wfg = rpc("object", "execute_kw", [env["PBMS_ODOO_DB"], uid, env["PBMS_ODOO_ADMIN_PASSWORD"], "g2p.bgtask.summary.wizard", "fields_get", ["target_registry"], {"attributes": ["selection"]}])
+assert any(k == "refugees" for k, _ in wfg["target_registry"]["selection"]), "refugees missing from g2p.bgtask.summary.wizard.target_registry"
+
+# Test enrolment cycle create wizard -> action_confirm for a refugee program (cleanup afterwards)
+prog_ids = rpc("object", "execute_kw", [env["PBMS_ODOO_DB"], uid, env["PBMS_ODOO_ADMIN_PASSWORD"], "g2p.program.definition", "search", [[("target_registry", "=", "refugees")]], {"limit": 1}])
+if prog_ids:
+    wiz_id = rpc("object", "execute_kw", [env["PBMS_ODOO_DB"], uid, env["PBMS_ODOO_ADMIN_PASSWORD"], "g2p.enrollment.cycle.create.wizard", "create", [{"program_id": prog_ids[0], "cycle_name": "SmokeTest Cycle"}]])
+    action = rpc("object", "execute_kw", [env["PBMS_ODOO_DB"], uid, env["PBMS_ODOO_ADMIN_PASSWORD"], "g2p.enrollment.cycle.create.wizard", "action_confirm", [[wiz_id]]])
+    assert action.get("res_model") == "g2p.bgtask.summary.wizard", f"Unexpected action: {action}"
+    cycle_id = action.get("context", {}).get("default_enrollment_cycle_id")
+    if cycle_id:
+        rpc("object", "execute_kw", [env["PBMS_ODOO_DB"], uid, env["PBMS_ODOO_ADMIN_PASSWORD"], "g2p.enrollment.cycle", "unlink", [[cycle_id]]])
 PY
-pass "Odoo /web/login (200), admin login, and target_registry='refugees' verified"
+pass "Odoo /web/login (200), admin login, target_registry='refugees' (program + summary wizard), and cycle creation verified"
 
 # 6. Staff Portal API /ping & /docs
 ping_res="$(curl -sf "http://localhost:${PBMS_STAFF_API_PORT:-8350}/ping")"

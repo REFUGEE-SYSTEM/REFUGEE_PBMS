@@ -92,6 +92,7 @@ program_id, created_prog = ensure_record(
     [("program_mnemonic", "=", "UG_REF_CBI")],
     {
         "program_mnemonic": "UG_REF_CBI",
+        "description": "Uganda Refugee Cash-Based Intervention",
         "target_registry": "refugees",
         "program_status": "ACTIVE",
         "enrollment_frequency": "Monthly",

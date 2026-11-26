@@ -1,5 +1,7 @@
 from odoo import fields, models
 
+from .registry_type import G2PRegistryType
+
 
 class G2PProgramDefinitionRefugee(models.Model):
     _inherit = "g2p.program.definition"
@@ -34,4 +36,14 @@ class G2PPriorityRuleDefinitionRefugee(models.Model):
     target_registry = fields.Selection(
         selection_add=[("refugees", "Refugees")],
         ondelete={"refugees": "cascade"},
+    )
+
+
+class G2PBgtaskSummaryWizardRefugee(models.TransientModel):
+    _inherit = "g2p.bgtask.summary.wizard"
+
+    target_registry = fields.Selection(
+        selection=lambda self: G2PRegistryType.selection(),
+        string="Registry Type",
+        required=True,
     )
