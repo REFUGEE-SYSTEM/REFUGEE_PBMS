@@ -1,0 +1,42 @@
+--- a/source/pbms/core/openg2p-bg-task-celery-workers/src/openg2p_bg_task_celery_workers/tasks/beneficiary_list_worker.py
++++ b/source/pbms/core/openg2p-bg-task-celery-workers/src/openg2p_bg_task_celery_workers/tasks/beneficiary_list_worker.py
+@@ -234,23 +234,27 @@
+     if latest_approved_final_enrollment_beneficiary_list_id:
+         latest_approved_final_enrollment_beneficiary_list_id = (
+             latest_approved_final_enrollment_beneficiary_list_id[0]
+         )
+ 
++    if not latest_approved_final_enrollment_beneficiary_list_id:
++        raise ValueError(
++            f"Cannot generate disbursement list {beneficiary_list.id}: "
++            f"no approved final enrollment list exists for program {beneficiary_list.program_id}."
++        )
++
+     # Get the registrant_details field from beneficiary_list_details for the latest approved final enrollment
+-    registrant_details_list = None
+-    if latest_approved_final_enrollment_beneficiary_list_id:
+-        registrant_details_list = (
+-            bg_task_session.execute(
+-                select(BeneficiaryListDetails.registrant_details).where(
+-                    BeneficiaryListDetails.beneficiary_list_id
+-                    == latest_approved_final_enrollment_beneficiary_list_id
+-                )
++    registrant_details_list = (
++        bg_task_session.execute(
++            select(BeneficiaryListDetails.registrant_details).where(
++                BeneficiaryListDetails.beneficiary_list_id
++                == latest_approved_final_enrollment_beneficiary_list_id
+             )
+-            .scalars()
+-            .all()
+         )
++        .scalars()
++        .all()
++    )
+ 
+     # Get approved registrant details for the latest approved final enrollment
+     registrant_ids = []
+-    for registrant_details in registrant_details_list:
++    for registrant_details in registrant_details_list or []:
+         if registrant_details:
+

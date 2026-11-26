@@ -1,0 +1,12 @@
+<odoo>
+    <record id="view_g2p_programs_config_form_currency" model="ir.ui.view">
+        <field name="name">g2p.programs.config.form.currency</field>
+        <field name="model">g2p.program.definition</field>
+        <field name="inherit_id" ref="g2p_pbms.view_g2p_programs_config_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='target_registry']" position="after">
+                <field name="currency_id" options="{'no_create': True}" readonly="not context.get('program_form_edit')"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

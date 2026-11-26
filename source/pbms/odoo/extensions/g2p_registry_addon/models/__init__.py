@@ -1,5 +1,8 @@
-from .registry import G2PRegistry
-from .farmer_registry import G2PFarmerRegistry
-from .household import G2PRegisterHousehold
-from .refugee_individual import G2PRefugeeIndividualRegistry
-from .refugee_group import G2PRefugeeGroupRegistry, G2PRefugeeGroupMember
+from . import registry
+from . import farmer_registry
+from . import household
+from . import refugee_individual
+from . import refugee_group
+from . import refugee
+from . import program_definition
+from . import spar_sync

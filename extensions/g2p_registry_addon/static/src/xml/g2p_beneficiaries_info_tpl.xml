@@ -84,7 +84,7 @@
                                     <th class="px-2 py-1">Country</th>
                                 </t>
                             </t>
-                            <t t-if="state.target_registry === 'refugee_individual'">
+                            <t t-if="(state.target_registry === 'refugee_individual' || state.target_registry === 'refugee')">
                                 <th class="px-2 py-1">Internal ID</th>
                                 <th class="px-2 py-1">Functional ID</th>
                                 <th class="px-2 py-1">Surname (B01)</th>
@@ -153,7 +153,7 @@
                                             <td class="px-2 py-1"><t t-esc="record.country_code"/></td>
                                         </t>
                                     </t>
-                                    <t t-if="state.target_registry === 'refugee_individual'">
+                                    <t t-if="(state.target_registry === 'refugee_individual' || state.target_registry === 'refugee')">
                                         <td class="px-2 py-1 text-muted"><t t-esc="record.internal_record_id"/></td>
                                         <td class="px-2 py-1 fw-semibold text-primary"><t t-esc="record.functional_record_id"/></td>
                                         <td class="px-2 py-1 fw-bold"><t t-esc="record.surname"/></td>
@@ -196,7 +196,7 @@
                                     <i class="fa fa-inbox fa-2x d-block mb-2"/>
                                     No records found.
                                 </td>
-                                <td t-elif="state.target_registry === 'refugee_individual'" colspan="10" class="text-center text-muted py-4">
+                                <td t-elif="(state.target_registry === 'refugee_individual' || state.target_registry === 'refugee')" colspan="10" class="text-center text-muted py-4">
                                     <i class="fa fa-inbox fa-2x d-block mb-2"/>
                                     No records found.
                                 </td>

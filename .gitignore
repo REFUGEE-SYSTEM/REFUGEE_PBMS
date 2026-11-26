@@ -64,3 +64,15 @@ Thumbs.db
 .vscode/
 *.swp
 *~
+/source/spar/
+/source/g2p-bridge/
+*.bak
+.env
+.env.*
+venv/
+.venv/
+filestore/
+logs/ø
+.ø
+.
+

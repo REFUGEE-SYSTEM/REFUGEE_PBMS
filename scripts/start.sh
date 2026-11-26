@@ -1,12 +1,4 @@
 #!/usr/bin/env bash
-# ==============================================================================
-# start.sh — Refugee Management Service Launcher Placeholder
-# ==============================================================================
-set -euo pipefail
-
-echo "=============================================================================="
-echo " Refugee Management Standalone Start Script"
-echo " Status: Gate 3 Project Structure Placeholder"
-echo " Note: Will launch standalone Docker Compose (project: refugee-management) in Gate 5."
-echo "=============================================================================="
-exit 0
+# Forwarder wrapper to organized script in scripts/startup/start.sh
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+exec "$SCRIPT_DIR/startup/start.sh" "$@"

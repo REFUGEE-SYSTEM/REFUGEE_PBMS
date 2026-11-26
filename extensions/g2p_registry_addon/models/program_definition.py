@@ -1,4 +1,10 @@
-from odoo import fields, models
+from odoo import api, fields, models
+from odoo.exceptions import ValidationError
+from odoo.addons.g2p_registry_type_addon.models import G2PTargetModelMapping
+
+# Ensure G2PTargetModelMapping contains refugee mapping
+if "refugee" not in G2PTargetModelMapping.MODEL_MAPPING:
+    G2PTargetModelMapping.MODEL_MAPPING["refugee"] = "g2p.refugee"
 
 
 class G2PProgramDefinitionRefugeeOnly(models.Model):
@@ -6,10 +12,10 @@ class G2PProgramDefinitionRefugeeOnly(models.Model):
 
     target_registry = fields.Selection(
         selection=[
-            ("refugee_individual", "Refugee Individual"),
-            ("refugee_group", "Refugee Group"),
+            ("refugee", "Refugee Registry"),
         ],
-        string="Target Registry",
+        string="Base Registry",
+        default="refugee",
         required=True,
     )
     currency_id = fields.Many2one(
@@ -19,3 +25,11 @@ class G2PProgramDefinitionRefugeeOnly(models.Model):
         default=lambda self: self.env.ref("base.UGX", raise_if_not_found=False),
         help="Currency used for this assistance programme (e.g. UGX - Ugandan Shilling).",
     )
+
+    @api.constrains("target_registry")
+    def _check_target_registry(self):
+        for rec in self:
+            if rec.target_registry != "refugee":
+                raise ValidationError(
+                    "Only 'Refugee Registry' (refugee) is supported for new or updated program configurations."
+                )

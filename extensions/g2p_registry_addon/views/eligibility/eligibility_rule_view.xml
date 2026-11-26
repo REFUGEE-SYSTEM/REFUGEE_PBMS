@@ -9,22 +9,27 @@
             <!-- Inject domain widgets inside the <group> -->
             <xpath expr="//form/sheet/group" position="inside">
 
-                <!-- Domain widget for the 'farmer' type -->
+                <!-- Domain widget for the unified 'refugee' type -->
+                <field name="pbms_domain" widget="domain"
+                       options="{'model': 'g2p.refugee'}"
+                       invisible="target_registry != 'refugee'"/>
+
+                <!-- Domain widget for the 'farmer' type (legacy) -->
                 <field name="pbms_domain" widget="domain"
                        options="{'model': 'g2p.register.farmer'}"
                        invisible="target_registry != 'farmer'"/>
 
-                <!-- Domain widget for the 'household' type -->
+                <!-- Domain widget for the 'household' type (legacy) -->
                 <field name="pbms_domain" widget="domain"
                        options="{'model': 'g2p.register.households'}"
                        invisible="target_registry != 'households'"/>
 
-                <!-- Domain widget for the 'refugee_individual' type -->
+                <!-- Domain widget for the 'refugee_individual' type (legacy) -->
                 <field name="pbms_domain" widget="domain"
                        options="{'model': 'g2p.register.refugee_individual'}"
                        invisible="target_registry != 'refugee_individual'"/>
 
-                <!-- Domain widget for the 'refugee_group' type -->
+                <!-- Domain widget for the 'refugee_group' type (legacy) -->
                 <field name="pbms_domain" widget="domain"
                        options="{'model': 'g2p.register.refugee_group'}"
                        invisible="target_registry != 'refugee_group'"/>

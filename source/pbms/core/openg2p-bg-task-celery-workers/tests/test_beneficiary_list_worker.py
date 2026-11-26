@@ -246,6 +246,138 @@ class TestConstructDisbursementSqlQuery(unittest.TestCase):
         self.assertEqual(bl_record.eligibility_process_status, "pending")
         pbms_session.commit.assert_called_once()
 
+    def test_e_disbursement_without_priority_rules_falls_back_to_enrollment_query(self):
+        """Test E: When no priority rules exist for disbursement cycle, falls back to enrollment query."""
+        (
+            self.pbms_session.query.return_value.filter.return_value.order_by.return_value.first.return_value
+        ) = ("approved-enroll-uuid-3",)
+        self.bg_task_session.execute.return_value.scalars.return_value.all.return_value = [
+            [{"registrant_id": "SYN-IND-003"}]
+        ]
+        self.pbms_session.execute.return_value.scalars.return_value.all.return_value = []
+
+        result = worker_mod.construct_disbursement_sql_query(
+            self.pbms_session, self.bg_task_session, self.beneficiary_list
+        )
+
+        self.assertEqual(result, "SELECT_ENROLL")
+        worker_mod.construct_priority_query.assert_not_called()
+
+    def test_f_repeated_calls_are_idempotent(self):
+        """Test F: Repeated calls to construct_disbursement_sql_query return identical results without state leakage."""
+        (
+            self.pbms_session.query.return_value.filter.return_value.order_by.return_value.first.return_value
+        ) = ("approved-enroll-uuid-4",)
+        self.bg_task_session.execute.return_value.scalars.return_value.all.return_value = [
+            json.dumps([{"registrant_id": "SYN-IND-010"}])
+        ]
+        self.pbms_session.execute.return_value.scalars.return_value.all.return_value = [
+            "SELECT internal_record_id FROM g2p_register_refugee_individual"
+        ]
+
+        res1 = worker_mod.construct_disbursement_sql_query(
+            self.pbms_session, self.bg_task_session, self.beneficiary_list
+        )
+        res2 = worker_mod.construct_disbursement_sql_query(
+            self.pbms_session, self.bg_task_session, self.beneficiary_list
+        )
+
+        self.assertEqual(res1, "SELECT 2")
+        self.assertEqual(res2, "SELECT 2")
+        self.assertEqual(worker_mod.construct_priority_query.call_count, 2)
+
+    def test_g_worker_max_attempts_marks_status_failed(self):
+        """Test G: Reaching worker_max_attempts sets eligibility_process_status to failed."""
+        pbms_session = MagicMock()
+        bg_task_session = MagicMock()
+        sr_session = MagicMock()
+
+        bl_record = MagicMock(
+            id=1000,
+            program_id=99,
+            disbursement_cycle_id=199,
+            list_stage="disbursement",
+            eligibility_number_of_attempts=2,  # config.worker_max_attempts == 3
+            eligibility_process_status="processing",
+            eligibility_latest_error_code=None,
+        )
+        prog_record = MagicMock(id=99, program_mnemonic="SYN_PROG", target_registry="refugee_individual")
+
+        pbms_session.query.return_value.filter.return_value.first.side_effect = [
+            bl_record,
+            prog_record,
+        ]
+        pbms_session.query.return_value.filter.return_value.order_by.return_value.first.return_value = None
+
+        with patch.object(
+            worker_mod,
+            "sessionmaker",
+            side_effect=[
+                MagicMock(return_value=MagicMock(__enter__=MagicMock(return_value=bg_task_session), __exit__=MagicMock(return_value=False))),
+                MagicMock(return_value=MagicMock(__enter__=MagicMock(return_value=sr_session), __exit__=MagicMock(return_value=False))),
+                MagicMock(return_value=MagicMock(__enter__=MagicMock(return_value=pbms_session), __exit__=MagicMock(return_value=False))),
+            ],
+        ):
+            with self.assertRaises(ValueError):
+                worker_mod.beneficiary_list_worker(1000)
+
+        self.assertEqual(bl_record.eligibility_number_of_attempts, 3)
+        self.assertEqual(bl_record.eligibility_process_status, "failed")
+        pbms_session.commit.assert_called_once()
+
+    def test_h_worker_happy_path_disbursement_persists_details_and_summary(self):
+        """Test H: Successful disbursement worker run executes query, adds details, computes summary, and commits."""
+        pbms_session = MagicMock()
+        bg_task_session = MagicMock()
+        sr_session = MagicMock()
+
+        bl_record = MagicMock(
+            id=1001,
+            program_id=99,
+            disbursement_cycle_id=199,
+            beneficiary_list_id="syn-list-uuid-1001",
+            list_stage="disbursement",
+            eligibility_number_of_attempts=0,
+            eligibility_process_status="processing",
+        )
+        prog_record = MagicMock(id=99, program_mnemonic="SYN_PROG", target_registry="refugee_individual")
+
+        pbms_session.query.return_value.filter.return_value.first.side_effect = [
+            bl_record,
+            prog_record,
+        ]
+        pbms_session.query.return_value.filter.return_value.order_by.return_value.first.return_value = (
+            "approved-enroll-uuid-5",
+        )
+        bg_task_session.execute.return_value.scalars.return_value.all.return_value = [
+            json.dumps([{"registrant_id": "SYN-IND-101"}])
+        ]
+        pbms_session.execute.return_value.scalars.return_value.all.return_value = [
+            "SELECT internal_record_id FROM g2p_register_refugee_individual"
+        ]
+
+        cursor_mock = MagicMock()
+        cursor_mock.fetchmany.side_effect = [[("SYN-IND-101",)], []]
+        sr_session.execute.return_value = cursor_mock
+
+        with patch.object(
+            worker_mod,
+            "sessionmaker",
+            side_effect=[
+                MagicMock(return_value=MagicMock(__enter__=MagicMock(return_value=bg_task_session), __exit__=MagicMock(return_value=False))),
+                MagicMock(return_value=MagicMock(__enter__=MagicMock(return_value=sr_session), __exit__=MagicMock(return_value=False))),
+                MagicMock(return_value=MagicMock(__enter__=MagicMock(return_value=pbms_session), __exit__=MagicMock(return_value=False))),
+            ],
+        ):
+            worker_mod.beneficiary_list_worker(1001)
+
+        self.assertEqual(bl_record.number_of_registrants, 1)
+        self.assertEqual(bl_record.eligibility_process_status, "complete")
+        self.assertEqual(bl_record.entitlement_process_status, "pending")
+        bg_task_session.add_all.assert_called_once()
+        bg_task_session.commit.assert_called_once()
+        pbms_session.commit.assert_called_once()
+
 
 if __name__ == "__main__":
     unittest.main()

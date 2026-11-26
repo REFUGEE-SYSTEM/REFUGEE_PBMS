@@ -5,6 +5,7 @@ from odoo import models, fields
 class G2PTargetModelMapping:
 
     MODEL_MAPPING = {
+        "refugee": "g2p.refugee",
         "farmer": "g2p.register.farmer",
         "households": "g2p.register.households",
         "refugee_individual": "g2p.register.refugee_individual",
@@ -17,6 +18,7 @@ class G2PTargetModelMapping:
 
 
 class G2PRegistryType(Enum):
+    REFUGEE = "refugee"
     FARMER = "farmer"
     HOUSEHOLDS = "households"
     REFUGEE_INDIVIDUAL = "refugee_individual"
@@ -24,4 +26,4 @@ class G2PRegistryType(Enum):
 
     @classmethod
     def selection(cls):
-        return [(member.value, member.name.replace("_", " ").title()) for member in cls]
+        return [("refugee", "Refugee Registry")]

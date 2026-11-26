@@ -5,6 +5,7 @@ from ..computations import (
     RegisterRefugeeGroup,
     RegistryFarmer,
     RegistryRefugeeIndividual,
+    RegistryRefugee,
 )
 from ..interface import RegistryInterface
 from ..models import G2PRegistryType
@@ -17,7 +18,9 @@ class RegistryFactory:
     def get_registry_class(
         target_registry,
     ) -> RegistryInterface:
-        if target_registry == G2PRegistryType.FARMER.value:
+        if target_registry in (G2PRegistryType.REFUGEE.value, "refugee"):
+            return RegistryRefugee()
+        elif target_registry == G2PRegistryType.FARMER.value:
             return RegistryFarmer()
         elif target_registry == G2PRegistryType.HOUSEHOLDS.value:
             return RegisterHousehold()

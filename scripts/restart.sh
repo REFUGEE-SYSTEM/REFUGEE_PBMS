@@ -1,12 +1,4 @@
 #!/usr/bin/env bash
-# ==============================================================================
-# restart.sh — Refugee Management Service Restart Placeholder
-# ==============================================================================
-set -euo pipefail
-
-echo "=============================================================================="
-echo " Refugee Management Standalone Restart Script"
-echo " Status: Gate 3 Project Structure Placeholder"
-echo " Note: Restarts standalone services cleanly."
-echo "=============================================================================="
-exit 0
+# Forwarder wrapper to organized script in scripts/shutdown/restart.sh
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+exec "$SCRIPT_DIR/shutdown/restart.sh" "$@"

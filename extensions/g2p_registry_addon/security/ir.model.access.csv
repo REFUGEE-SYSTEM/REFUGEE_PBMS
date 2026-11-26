@@ -11,3 +11,5 @@ g2p_refugee_group_member_read,Read Refugee Group Member,model_g2p_refugee_group_
 g2p_refugee_group_member_write,Write Refugee Group Member,model_g2p_refugee_group_member,g2p_pbms.group_beneficiary_list_editor,1,1,1,1
 g2p_refugee_specific_need_read,Read Refugee Specific Need,model_g2p_refugee_specific_need,g2p_pbms.group_beneficiary_list_viewer,1,0,0,0
 g2p_refugee_specific_need_write,Write Refugee Specific Need,model_g2p_refugee_specific_need,g2p_pbms.group_beneficiary_list_editor,1,1,1,1
+g2p_refugee_read,Read Refugee Registry,model_g2p_refugee,g2p_pbms.group_beneficiary_list_viewer,1,0,0,0
+g2p_refugee_write,Write Refugee Registry,model_g2p_refugee,g2p_pbms.group_beneficiary_list_editor,1,1,1,1

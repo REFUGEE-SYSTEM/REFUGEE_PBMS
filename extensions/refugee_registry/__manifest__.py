@@ -1,0 +1,20 @@
+{
+    "name": "Refugee Registry",
+    "version": "17.0.1.0.0",
+    "summary": "UNHCR-aligned Refugee Individual, Group, and Specific Needs Registries",
+    "description": "Refugee Individual and Group/Household Registries compliant with UNHCR ProGres v4 standards",
+    "category": "G2P",
+    "license": "LGPL-3",
+    "depends": ["base_setup", "web", "g2p_pbms"],
+    "data": [
+        "security/ir.model.access.csv",
+        "views/registry/farmer_registry_view.xml",
+        "views/registry/household_registry_view.xml",
+        "views/registry/refugee_individual_view.xml",
+        "views/registry/refugee_group_view.xml",
+        "views/menu.xml",
+    ],
+    "installable": True,
+    "application": True,
+    "auto_install": False,
+}
