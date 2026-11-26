@@ -58,11 +58,17 @@ pass "Postgres databases pbmsdb and bgtaskdb exist"
 [[ "$(docker compose exec -T redis redis-cli ping)" == "PONG" ]] || fail "Redis ping failed"
 pass "Redis responds PONG"
 
-# 4. Odoo addon installed
+# 4. Odoo addon installed & required config parameters present
 mod_state="$(docker compose exec -T postgres psql -U "${PBMS_DB_USER:-pbmsuser}" -d "${PBMS_ODOO_DB:-pbmsdb}" -tAc \
   "SELECT state FROM ir_module_module WHERE name='g2p_registry_type_refugee'")"
 [[ "$mod_state" == "installed" ]] || fail "g2p_registry_type_refugee state='$mod_state'"
-pass "Odoo addon g2p_registry_type_refugee installed"
+staff_url="$(docker compose exec -T postgres psql -U "${PBMS_DB_USER:-pbmsuser}" -d "${PBMS_ODOO_DB:-pbmsdb}" -tAc \
+  "SELECT value FROM ir_config_parameter WHERE key='g2p_pbms.staff_portal_api_url'")"
+[[ "$staff_url" == "http://pbms-staff-api:8000" ]] || fail "g2p_pbms.staff_portal_api_url='$staff_url'"
+sender_id="$(docker compose exec -T postgres psql -U "${PBMS_DB_USER:-pbmsuser}" -d "${PBMS_ODOO_DB:-pbmsdb}" -tAc \
+  "SELECT value FROM ir_config_parameter WHERE key='g2p_pbms.keymanager_sign_application_id'")"
+[[ -n "$sender_id" ]] || fail "g2p_pbms.keymanager_sign_application_id is empty"
+pass "Odoo addon g2p_registry_type_refugee installed and config parameters set"
 
 # 5. Odoo HTTP + admin login + target_registry selection
 code="$(curl -s -o /dev/null -w '%{http_code}' "http://localhost:${PBMS_ODOO_PORT:-8369}/web/login")"
