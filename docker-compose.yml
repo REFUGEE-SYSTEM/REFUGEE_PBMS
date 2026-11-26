@@ -1,0 +1,43 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${PBMS_DB_USER:-pbmsuser}
+      POSTGRES_PASSWORD: ${PBMS_DB_PASSWORD}
+      POSTGRES_DB: ${PBMS_ODOO_DB:-pbmsdb}
+    ports:
+      - "${PBMS_POSTGRES_PORT:-5635}:5432"
+    volumes:
+      - refugee_pbms_postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres-init:/docker-entrypoint-initdb.d:ro
+    networks:
+      - refugee_pbms_net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${PBMS_DB_USER:-pbmsuser} -d ${PBMS_ODOO_DB:-pbmsdb}"]
+      interval: 5s
+      timeout: 5s
+      retries: 15
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "${PBMS_REDIS_PORT:-6581}:6379"
+    volumes:
+      - refugee_pbms_redis_data:/data
+    networks:
+      - refugee_pbms_net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 15
+
+volumes:
+  refugee_pbms_postgres_data:
+  refugee_pbms_redis_data:
+
+networks:
+  refugee_pbms_net:
+    driver: bridge
