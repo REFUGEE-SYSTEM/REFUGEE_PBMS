@@ -39,12 +39,17 @@ SR_PASS="${PBMS_SR_DB_PASSWORD}"
 
 docker exec -i -e SR_USER="$SR_USER" -e SR_DB="$SR_DB" -e SR_PASS="$SR_PASS" "$PG_CID" sh -eu <<'EOS'
 psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$SR_DB" -v sr_user="$SR_USER" -v sr_pass="$SR_PASS" -v sr_db="$SR_DB" <<'SQL'
+SELECT set_config('pbms.sr_user', :'sr_user', false);
+SELECT set_config('pbms.sr_pass', :'sr_pass', false);
 DO $$
+DECLARE
+  v_user text := current_setting('pbms.sr_user');
+  v_pass text := current_setting('pbms.sr_pass');
 BEGIN
-  IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = :'sr_user') THEN
-    EXECUTE format('CREATE ROLE %I WITH LOGIN PASSWORD %L NOSUPERUSER NOCREATEDB NOCREATEROLE', :'sr_user', :'sr_pass');
+  IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = v_user) THEN
+    EXECUTE format('CREATE ROLE %I WITH LOGIN PASSWORD %L NOSUPERUSER NOCREATEDB NOCREATEROLE', v_user, v_pass);
   ELSE
-    EXECUTE format('ALTER ROLE %I WITH LOGIN PASSWORD %L', :'sr_user', :'sr_pass');
+    EXECUTE format('ALTER ROLE %I WITH LOGIN PASSWORD %L', v_user, v_pass);
   END IF;
 END
 $$;
