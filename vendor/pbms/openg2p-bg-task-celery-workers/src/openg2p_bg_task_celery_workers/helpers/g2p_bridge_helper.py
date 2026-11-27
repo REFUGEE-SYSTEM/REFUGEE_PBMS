@@ -23,6 +23,26 @@ class G2PBridgeDisbursementHelper:
         self._logger = logger
         self.keymanager_crypto_helper = KeymanagerCryptoHelper()
 
+    def _build_headers(self, payload_json):
+        """Build HTTP headers, signing with Keymanager only when configured."""
+        headers = {
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+        }
+        if self._config.keymanager_api_base_url:
+            jwt_token = asyncio.run(
+                self.keymanager_crypto_helper.create_jwt_token(
+                    payload=payload_json,
+                    include_payload=False,
+                    include_certificate=False,
+                    include_cert_hash=False,
+                    km_app_id=self._config.keymanager_sign_app_id,
+                    km_ref_id=self._config.keymanager_sign_ref_id,
+                )
+            )
+            headers["Signature"] = jwt_token
+        return headers
+
     def create_disbursement_envelopes(self, disbursement_envelope_request_message):
         """
         Sends a request to the bridge to create a disbursement envelope.
@@ -53,22 +73,7 @@ class G2PBridgeDisbursementHelper:
         )
         self._logger.debug(f"Envelope Creation URL: {envelope_creation_url}")
 
-        jwt_token = asyncio.run(
-            self.keymanager_crypto_helper.create_jwt_token(
-                payload=disbursement_envelope_request_json,
-                include_payload=False,
-                include_certificate=False,
-                include_cert_hash=False,
-                km_app_id=self._config.keymanager_sign_app_id,
-                km_ref_id=self._config.keymanager_sign_ref_id,
-            )
-        )
-
-        headers = {
-            "Accept": "application/json",
-            "Content-Type": "application/json",
-            "Signature": jwt_token,
-        }
+        headers = self._build_headers(disbursement_envelope_request_json)
 
         self._logger.info("Calling disbursement envelope creation endpoint")
         try:
@@ -142,22 +147,7 @@ class G2PBridgeDisbursementHelper:
         disbursement_url = self._config.g2p_bridge_base_url + "/create_disbursements"
         self._logger.debug(f"Disbursement URL: {disbursement_url}")
 
-        jwt_token = asyncio.run(
-            self.keymanager_crypto_helper.create_jwt_token(
-                payload=disbursement_request_json,
-                include_payload=False,
-                include_certificate=False,
-                include_cert_hash=False,
-                km_app_id=self._config.keymanager_sign_app_id,
-                km_ref_id=self._config.keymanager_sign_ref_id,
-            )
-        )
-
-        headers = {
-            "Accept": "application/json",
-            "Content-Type": "application/json",
-            "Signature": jwt_token,
-        }
+        headers = self._build_headers(disbursement_request_json)
         self._logger.info(
             f"Calling disbursement creation endpoint for disbursement batch id {disbursement_batch.id} having {len(disbursement_payloads)} beneficiaries"
         )

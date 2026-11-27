@@ -135,6 +135,7 @@ services:
       BG_TASK_CELERY_WORKERS_DB_PORT_PBMS: "5432"
       BG_TASK_CELERY_WORKERS_DB_DBNAME_PBMS: ${PBMS_ODOO_DB:-pbmsdb}
       BG_TASK_CELERY_WORKERS_G2P_BRIDGE_BASE_URL: http://host.docker.internal:${BRIDGE_API_PORT:-8395}
+      BG_TASK_CELERY_WORKERS_KEYMANAGER_AUTH_ENABLED: "false"
     extra_hosts:
       - "host.docker.internal:host-gateway"
     networks:
